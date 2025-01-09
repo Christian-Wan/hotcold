@@ -1,6 +1,7 @@
 /* === Imports === */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"
 /* === Firebase Setup === */
   // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -13,6 +14,8 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
   };
   const app= initializeApp(firebaseConfig)
   const auth = getAuth(app)
+  const db = getFirestore(app);
+  console.log(db)
   console.log(auth)
 /* === UI === */
 
@@ -30,7 +33,13 @@ const passwordInputEl = document.getElementById("password-input")
 const signInButtonEl = document.getElementById("sign-in-btn")
 const createAccountButtonEl = document.getElementById("create-account-btn")
 
+const userProfilePictureEl = document.getElementById("user-profile-picture")
+const userGreetingEl = document.getElementById("user-greeting")
+
+const textareaEl = document.getElementById("post-input")
+const postButtonEl = document.getElementById("post-btn")
 /* == UI - Event Listeners == */
+postButtonEl.addEventListener("click", postButtonPressed)
 
 signOutButtonEl.addEventListener("click", authSignOut)
 
@@ -42,9 +51,36 @@ createAccountButtonEl.addEventListener("click", authCreateAccountWithEmail)
 /* === Main Code === */
 console.log(app.options.projectId)
 showLoggedOutView()
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    showLoggedInView
+    showProfilePicture(userProfilePictureEl, user)
+    showUserGreeting(userGreetingEl,user)
+  } else {
+    showLoggedOutView
+  }
+});
 
 /* === Functions === */
+function showProfilePicture(imgElement, user) {
+    if (user.photoURL) {
+        imgElement.src = user.photoURL
+    }
+    else {
+        imgElement.src = "assets/images/defaultPic.jpg"
+    }
+}
 
+function showUserGreeting(element, user) {
+        if (user.displayName) {
+            element.innerHTML = "Hi " + user.displayName
+        }
+        else {
+            element.innerHTML = "Hey friend, how are you?"
+        }
+ }
+ 
+ 
 /* = Functions - Firebase - Authentication = */
 
 function authSignInWithGoogle() {
@@ -54,7 +90,7 @@ function authSignInWithGoogle() {
 function authSignInWithEmail() {
     console.log("Sign in with email and password")
 
-    const auth = getAuth();
+
     signInWithEmailAndPassword(auth, emailInputEl.value, passwordInputEl.value)
     .then((userCredential) => {
         // Signed in 
@@ -83,7 +119,6 @@ function authCreateAccountWithEmail() {
 }
 
 function authSignOut() {    
-    const auth = getAuth();
     signOut(auth).then(() => {
         // Sign-out successful.
         showLoggedOutView()
@@ -91,25 +126,55 @@ function authSignOut() {
         // An error happened.
     });
 }
+
  
 /* == Functions - UI Functions == */
 
+async function addPostToDB(postBody, user) {
+
+    try {
+        const docRef = await addDoc(collection(db, "Posts"), {
+            body: postBody,
+            UID: user.uid,
+            createdAt: serverTimestamp()
+        });
+        console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+ }
+ 
+function postButtonPressed() {
+    const postBody = textareaEl.value
+    const user = auth.currentUser
+   
+    if (postBody) {
+        addPostToDB(postBody, user)
+        clearInputField(textareaEl)
+    }
+ }
+ 
+
 function showLoggedOutView() {
-    hideElement(viewLoggedIn)
-    showElement(viewLoggedOut)
-}
-
-function showLoggedInView() {
-    hideElement(viewLoggedOut)
-    showElement(viewLoggedIn)
-}
-
-function showElement(element) {
-    element.style.display = "flex"
-}
-
-function hideElement(element) {
-    element.style.display = "none"
-}
+    hideView(viewLoggedIn)
+    showView(viewLoggedOut)
+ }
+ 
+ 
+ function showLoggedInView() {
+    hideView(viewLoggedOut)
+    showView(viewLoggedIn)
+ }
+ 
+ 
+ function showView(view) {
+    view.style.display = "flex"
+ }
+ 
+ 
+ function hideView(view) {
+    view.style.display = "none"
+ }
+ 
 
 //credit: coursera
