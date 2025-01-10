@@ -38,8 +38,11 @@ const userGreetingEl = document.getElementById("user-greeting")
 
 const textareaEl = document.getElementById("post-input")
 const postButtonEl = document.getElementById("post-btn")
+const emojiSelectionEl = document.getElementById("emoji-selection")
+const retrieveButtonEl = document.getElementById("retrieve-btn")
 /* == UI - Event Listeners == */
 postButtonEl.addEventListener("click", postButtonPressed)
+retrieveButtonEl.addEventListener("click", retrieveButtonPressed)
 
 signOutButtonEl.addEventListener("click", authSignOut)
 
@@ -80,6 +83,15 @@ function showUserGreeting(element, user) {
         }
  }
  
+async function retrievePost(documentName) {
+    const cityRef = db.collection('cities').doc(documentName);
+    const doc = await cityRef.get();
+    if (!doc.exists) {
+        console.log('No such document!');
+    } else {
+        console.log('Document data:', doc.data());
+    }
+ }
  
 /* = Functions - Firebase - Authentication = */
 
@@ -153,6 +165,15 @@ function postButtonPressed() {
         clearInputField(textareaEl)
     }
  }
+
+function retrieveButtonPressed() {
+    //get all documents from posts and update the global list that contains all possible posts
+    //find one that hasn't been seen (make two global lists one that contains the alrady seen documents and one that has all documents in posts)
+    //select one that has not been seen yet and call the retrieve post function with the document as a parameter
+    //update the global list that has seen posts
+    //the retrieve post function will call another not yet created function that creates the post on the screen
+    
+}
  
 
 function showLoggedOutView() {
