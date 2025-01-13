@@ -279,3 +279,13 @@ classes to make the sign out buttons work
 }
 
 /*  credit:coursera */
+
+
+.retrieved-post {
+    background-color: #FF9F9F;
+    border-style: solid;
+    border-width: 3px;
+    border-color: #000000;
+    margin-top: 10px;
+    padding: 10px;
+}

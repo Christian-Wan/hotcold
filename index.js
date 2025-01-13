@@ -1,7 +1,7 @@
 /* === Imports === */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"
+import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"
 /* === Firebase Setup === */
   // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -40,6 +40,7 @@ const textareaEl = document.getElementById("post-input")
 const postButtonEl = document.getElementById("post-btn")
 const emojiSelectionEl = document.getElementById("emoji-selection")
 const retrieveButtonEl = document.getElementById("retrieve-btn")
+const retrievePostsEl = document.getElementById("retrieved-posts")
 /* == UI - Event Listeners == */
 postButtonEl.addEventListener("click", postButtonPressed)
 retrieveButtonEl.addEventListener("click", retrieveButtonPressed)
@@ -52,6 +53,11 @@ signInButtonEl.addEventListener("click", authSignInWithEmail)
 createAccountButtonEl.addEventListener("click", authCreateAccountWithEmail)
 
 /* === Main Code === */
+let seenPosts = []
+let possiblePosts = []
+
+findPossiblePosts()
+
 console.log(app.options.projectId)
 showLoggedOutView()
 onAuthStateChanged(auth, (user) => {
@@ -83,15 +89,16 @@ function showUserGreeting(element, user) {
         }
  }
  
-async function retrievePost(documentName) {
-    const cityRef = db.collection('cities').doc(documentName);
-    const doc = await cityRef.get();
-    if (!doc.exists) {
-        console.log('No such document!');
-    } else {
-        console.log('Document data:', doc.data());
-    }
- }
+
+async function findPossiblePosts() {
+    const q = query(collection(db, "Posts"));
+
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+        possiblePosts.push(doc.data())
+    });
+    console.log(possiblePosts)
+}
  
 /* = Functions - Firebase - Authentication = */
 
@@ -148,7 +155,8 @@ async function addPostToDB(postBody, user) {
         const docRef = await addDoc(collection(db, "Posts"), {
             body: postBody,
             UID: user.uid,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            Emoji: emojiSelectionEl.value
         });
         console.log("Document written with ID: ", docRef.id);
     } catch (e) {
@@ -167,12 +175,21 @@ function postButtonPressed() {
  }
 
 function retrieveButtonPressed() {
-    //get all documents from posts and update the global list that contains all possible posts
-    //find one that hasn't been seen (make two global lists one that contains the alrady seen documents and one that has all documents in posts)
-    //select one that has not been seen yet and call the retrieve post function with the document as a parameter
-    //update the global list that has seen posts
-    //the retrieve post function will call another not yet created function that creates the post on the screen
+    for (const element of possiblePosts) {
+        if (!seenPosts.includes(element)) {
+            displayPost(element)
+            seenPosts.push(element)
+            return
+        }
+    }
     
+}
+
+function displayPost(element) {
+    const post = document.createElement("div")
+    post.innerHTML = element.body
+    post.className = "retrieved-post"
+    retrievePostsEl.appendChild(post)
 }
  
 
