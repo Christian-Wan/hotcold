@@ -280,6 +280,10 @@ classes to make the sign out buttons work
 
 /*  credit:coursera */
 
+#message {
+    margin: 0px;
+
+}
 
 .retrieved-post {
     background-color: #FF9F9F;
@@ -288,4 +292,23 @@ classes to make the sign out buttons work
     border-color: #000000;
     margin-top: 10px;
     padding: 10px;
+}
+
+
+.date {
+    float: left;
+    width: 90%;
+    margin-bottom: 10px;
+}
+
+.emoji {
+    float: right;
+    width: 10%;
+    margin-bottom: 10px;
+}
+
+.body {
+    width: 100%;
+    float: left;
+    margin-bottom: 10px;
 }

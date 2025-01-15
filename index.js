@@ -91,6 +91,7 @@ function showUserGreeting(element, user) {
  
 
 async function findPossiblePosts() {
+    possiblePosts = []
     const q = query(collection(db, "Posts"));
 
     const querySnapshot = await getDocs(q);
@@ -98,6 +99,7 @@ async function findPossiblePosts() {
         possiblePosts.push(doc.data())
     });
     console.log(possiblePosts)
+
 }
  
 /* = Functions - Firebase - Authentication = */
@@ -156,7 +158,8 @@ async function addPostToDB(postBody, user) {
             body: postBody,
             UID: user.uid,
             createdAt: serverTimestamp(),
-            Emoji: emojiSelectionEl.value
+            Emoji: emojiSelectionEl.value,
+            email: emailInputEl.value
         });
         console.log("Document written with ID: ", docRef.id);
     } catch (e) {
@@ -182,12 +185,25 @@ function retrieveButtonPressed() {
             return
         }
     }
-    
 }
 
 function displayPost(element) {
     const post = document.createElement("div")
-    post.innerHTML = element.body
+    const date = document.createElement("div")
+    const emoji = document.createElement("div")
+    const body = document.createElement("span")
+    const poster = document.createElement("p")
+    date.className = "date"
+    emoji.className = "emoji"
+    body.className = "body"
+    post.appendChild(date)
+    post.appendChild(emoji)
+    post.appendChild(body)
+    post.appendChild(poster)
+    date.innerHTML = element.createdAt.toDate()
+    emoji.innerHTML = element.Emoji
+    body.innerHTML = element.body
+    poster.innerHTML = "User: " + element.email
     post.className = "retrieved-post"
     retrievePostsEl.appendChild(post)
 }
